@@ -1,0 +1,51 @@
+# ============================================================================
+# CSDN 平台插件
+# ============================================================================
+# 这个文件定义 CSDN 平台的全部内容生成参数。
+# 添加新平台：复制本文件改个名 + 在 prompts/platforms/ 写对应模板即可。
+# ============================================================================
+
+id: "csdn"
+name: "CSDN"
+display_name: "CSDN"
+enabled: true
+
+# 平台特性
+profile:
+  audience: "技术开发者"
+  content_type: "long_form_technical"
+  preferred_length: "1500-3000 字"
+  language: "zh-CN"
+  
+# 风格特征
+style:
+  tone: "专业、严谨、实用"
+  formatting: "Markdown 标准（H1/H2/H3、代码块、列表）"
+  emoji_density: "low"        # low / medium / high
+  first_person: false
+  hashtags: false
+  
+# SEO 优化
+seo:
+  enabled: true
+  keyword_density: "high"    # 强调关键词
+  title_max_length: 50
+  
+# 模板文件
+prompt_template: "prompts/platforms/csdn.txt"
+
+# 发布配置
+publishing:
+  has_official_api: true       # CSDN 有发布API
+  auto_publish_supported: true # 但需要个人申请权限
+  manual_url: "https://mp.csdn.net/mp_blog/manage/article"
+
+# 强制内容
+required_elements:
+  - sponsor_attribution        # 必须有 Upstream Labs 标注
+  - project_links              # 必须有项目链接
+  - utm_tracking               # 必须用 UTM 链接
+
+# 输出
+output:
+  file_extension: "md"

@@ -1,0 +1,36 @@
+id: "wechat"
+name: "微信公众号"
+display_name: "微信公众号"
+enabled: true
+
+profile:
+  audience: "已关注的读者、深度阅读偏好"
+  content_type: "deep_article_with_imagery"
+  preferred_length: "1200-2000 字"
+  language: "zh-CN"
+  
+style:
+  tone: "深度、故事性、有温度"
+  formatting: "引子→正文（分章节）→尾段"
+  emoji_density: "low"
+  first_person: false      # 多用第三人称（"DoraMate 项目组发现..."）
+  hashtags: false
+  
+seo:
+  enabled: false           # 公众号 SEO 价值低，重点是阅读体验
+  title_max_length: 25
+
+prompt_template: "prompts/platforms/wechat.txt"
+
+publishing:
+  has_official_api: true   # 公众号有素材 API
+  auto_publish_supported: true   # 可上传草稿+扫码确认
+  manual_url: "https://mp.weixin.qq.com"
+
+required_elements:
+  - sponsor_attribution
+  - qrcode_for_community   # 加群二维码引导
+
+output:
+  file_extension: "md"
+  include_image_suggestions: true

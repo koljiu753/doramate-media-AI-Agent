@@ -1,0 +1,54 @@
+# API Keys / Secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Output（生成的内容不入库）
+output/
+data/agent.db
+data/topic_history.db
+*.log
+
+# 临时文件
+.tmp_*/
+*.tmp
+
+# 用户上传的 brand 资源（如有敏感）
+assets/brand/wechat_group_qr.png

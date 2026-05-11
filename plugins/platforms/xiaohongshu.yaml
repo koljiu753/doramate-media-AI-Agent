@@ -1,0 +1,37 @@
+id: "xiaohongshu"
+name: "小红书"
+display_name: "小红书"
+enabled: true
+
+profile:
+  audience: "年轻用户、设计师、创作者"
+  content_type: "short_visual"
+  preferred_length: "300-500 字"
+  language: "zh-CN"
+  
+style:
+  tone: "亲切、有体验感、生活化"
+  formatting: "短句、emoji 密集、分点清晰"
+  emoji_density: "high"
+  first_person: true
+  hashtags: true
+  
+seo:
+  enabled: true
+  keyword_density: "medium"
+  title_max_length: 20         # 小红书标题超长会折叠
+
+prompt_template: "prompts/platforms/xiaohongshu.txt"
+
+publishing:
+  has_official_api: false      # 没有公开发布 API
+  auto_publish_supported: false
+  manual_url: "https://creator.xiaohongshu.com"
+  notes: "小红书禁外链。引流靠简介或私信。"
+
+required_elements:
+  - sponsor_attribution_short  # 简短版（避免硬广感）
+
+output:
+  file_extension: "md"
+  include_image_suggestions: true   # 配图建议

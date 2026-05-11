@@ -1,0 +1,139 @@
+# ============================================================================
+# 项目身份配置 (Project Identity)
+# ============================================================================
+# 这是整个 Agent 的"身份证"。
+# 如果你 fork 这个项目用到自己的开源项目宣传上，只需要改这一个文件。
+# 代码里任何"DoraMate"、"冯小婷"、"Upstream Labs" 都会从这里读取。
+# ============================================================================
+
+project:
+  # 项目基本信息
+  name: "DoraMate"
+  display_name: "DoraMate"
+  tagline: "为具身智能而生的低代码开发平台"
+  description: |
+    基于 dora-rs 框架的低代码机器人开发平台，
+    通过可视化节点编排，降低具身智能开发门槛。
+  
+  # 链接
+  github: "https://github.com/DoraCN/DoraMate"
+  website: "https://doracc.com"
+  docs: "https://doracc.com/docs"
+  community_qrcode: "assets/brand/wechat_group_qr.png"  # 微信群二维码路径
+  
+  # 上游/相关项目
+  parent_project:
+    name: "dora-rs"
+    url: "https://github.com/dora-rs/dora"
+    website: "https://dora-rs.ai"
+  
+  # 关键词（用于 SEO + 内容生成时的强制关键词）
+  keywords:
+    - "具身智能"
+    - "机器人开发"
+    - "低代码"
+    - "可视化编程"
+    - "Dora-rs"
+    - "DoraMate"
+    - "Embodied AI"
+  
+  # 视觉标识
+  brand:
+    logo: "assets/brand/logo.png"
+    logo_dark: "assets/brand/logo_dark.png"
+    primary_color: "#FF6B35"      # 主色
+    secondary_color: "#2E5C8A"    # 副色
+    font_zh: "Microsoft YaHei"
+    font_en: "Inter"
+
+# ============================================================================
+# 团队成员（多人协作时配置）
+# ============================================================================
+team:
+  contributors:
+    - id: "fengxiaoting"
+      name: "冯小婷"
+      role: "产品设计 / 内容运营"
+      handle:
+        xiaohongshu: "https://xhslink.com/m/56b8wpl4eXv"
+        csdn: ""
+      voice_style: "亲切、有审美感、设计师视角"
+      
+    - id: "xiahao"
+      name: "夏豪"
+      role: "前端开发 / 技术博客"
+      handle:
+        csdn_1: "https://blog.csdn.net/jiushiyikeshu"
+        csdn_2: "https://blog.csdn.net/saymain"
+      voice_style: "技术深度、实战视角"
+  
+  mentors:
+    - name: "李扬"
+      role: "项目导师 / dora-rs 核心维护者"
+      website: "https://echoli.cn"
+
+# ============================================================================
+# 赞助方 / 必要标注（合同义务）
+# ============================================================================
+sponsors:
+  required_attribution:
+    - text_zh: "源起之道支持"
+      text_en: "Supported by Upstream Labs"
+      combined: "源起之道支持｜Supported by Upstream Labs"
+      url: "https://upstreamlabs.ai"
+      mandatory: true   # 强制：所有公开内容必须含此标注
+      
+# ============================================================================
+# KPI 配置（来自任务书）
+# ============================================================================
+# 周报 Agent 会基于这里的目标自动生成进度报告
+# 数据更新到 data/metrics.json
+# ============================================================================
+kpis:
+  - id: "total_exposure"
+    name: "全网累计曝光"
+    target: 50000
+    unit: "次"
+    sources: ["csdn", "zhihu", "xiaohongshu", "bilibili", "wechat"]
+    
+  - id: "article_count"
+    name: "高质量技术文章"
+    target: 15
+    unit: "篇"
+    
+  - id: "wechat_group_size"
+    name: "微信群活跃用户"
+    target: 200
+    unit: "人"
+    
+  - id: "user_survey_count"
+    name: "种子用户问卷"
+    target: 50
+    unit: "份"
+    
+  - id: "github_stars"
+    name: "GitHub Stars"
+    target: 100
+    unit: "颗"
+
+# ============================================================================
+# 内容生产偏好
+# ============================================================================
+content_preferences:
+  default_language: "zh-CN"
+  publish_calendar:
+    monday: ["csdn"]
+    tuesday: ["xiaohongshu"]
+    thursday: ["zhihu", "wechat"]
+    friday: ["bilibili"]
+    saturday: ["xiaohongshu"]
+  
+  # 视频偏好
+  video:
+    target_platforms: ["bilibili", "xiaohongshu_video"]
+    target_duration_seconds: 180   # 3 分钟（B站完播率黄金区间）
+    aspect_ratios:
+      bilibili: "16:9"
+      xiaohongshu_video: "9:16"
+    bgm_volume: 0.15               # 背景音乐音量（0-1）
+    voice_speed: 1.0               # 语速倍率

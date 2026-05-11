@@ -1,0 +1,38 @@
+id: "bilibili"
+name: "B站"
+display_name: "哔哩哔哩"
+enabled: true
+
+profile:
+  audience: "年轻技术爱好者、学生"
+  content_type: "video_script_with_column"
+  preferred_length: "3-5 分钟视频 + 300-500 字专栏"
+  language: "zh-CN"
+
+style:
+  tone: "趣味、有梗、技术+娱乐"
+  formatting: "分镜表格 + 视频简介 + 专栏配文"
+  emoji_density: "medium"
+  first_person: true
+  hashtags: false
+
+seo:
+  enabled: true
+  keyword_density: "medium"
+  title_max_length: 30
+  # B 站有自己的标签体系
+
+prompt_template: "prompts/platforms/bilibili.txt"
+
+publishing:
+  has_official_api: true       # B 站有较完整开放平台
+  auto_publish_supported: true # 视频上传 API 可用
+  manual_url: "https://member.bilibili.com/platform/upload/video/frame"
+
+required_elements:
+  - sponsor_attribution
+  - call_to_action_three_combo   # B站特色：一键三连
+
+output:
+  file_extension: "md"
+  generate_storyboard: true       # 生成视频分镜表

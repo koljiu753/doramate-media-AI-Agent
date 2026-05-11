@@ -1,0 +1,138 @@
+# ============================================================================
+# Agent 行为配置
+# ============================================================================
+# 这里配置每个 Agent 的行为参数（不涉及项目身份，那个在 project.yaml）
+# ============================================================================
+
+# --- LLM 配置 ---
+llm:
+  # 默认 provider：deepseek（国内直连+便宜）
+  # 可选：deepseek / openai / anthropic / qwen / ollama
+  default_provider: "deepseek"
+  
+  # 不同任务可以用不同 provider（分离关注点）
+  task_providers:
+    content_generation: "deepseek"      # 写文案
+    topic_curation: "deepseek"          # 选题
+    quality_check: "deepseek"           # 内容审核
+    weekly_report: "deepseek"           # 周报生成
+  
+  # 参数
+  temperature: 0.7
+  max_tokens: 4000
+  timeout_seconds: 60
+  retry_times: 3
+
+# --- 创作 Agent ---
+creator:
+  # 默认生成的平台（启用的）
+  default_platforms: ["csdn", "xiaohongshu", "zhihu", "bilibili", "wechat"]
+  
+  # 创作前是否检索知识库
+  use_knowledge_base: true
+  
+  # 是否在生成内容里强制包含 sponsors 标注
+  enforce_sponsor_attribution: true
+  
+  # 是否自动生成 UTM 链接
+  auto_generate_utm: true
+  
+  # 输出位置
+  output_dir: "output/content"
+
+# --- 选题 Agent ---
+curator:
+  # 数据源（按优先级）
+  sources:
+    - id: "github_trending"
+      enabled: true
+      url_template: "https://api.github.com/search/repositories?q=topic:{topic}&sort=stars"
+      topics: ["embodied-ai", "robotics", "low-code", "dora-rs"]
+      fetch_limit: 10
+      
+    - id: "zhihu_hot"
+      enabled: false   # 知乎需要登录，默认关闭
+      keywords: ["具身智能", "机器人开发", "DoraMate"]
+      
+    - id: "arxiv"
+      enabled: true
+      categories: ["cs.RO", "cs.AI"]
+      keywords: ["embodied", "robotics", "manipulation"]
+      fetch_limit: 5
+      
+    - id: "dora_github"
+      enabled: true
+      repos: ["dora-rs/dora", "DoraCN/DoraMate"]
+      check_releases: true
+      check_issues: true
+  
+  # 推送
+  schedule: "0 9 * * *"   # 每天早 9 点（cron 表达式）
+  output_dir: "output/topics"
+  history_db: "data/topic_history.db"   # 记录已发选题，避免重复
+
+# --- 视频 Agent ---
+video:
+  # 工作流：text → tts → image → composite → caption
+  enabled_steps:
+    - "script"           # 脚本生成
+    - "tts"              # 语音合成
+    - "image_generation" # AI 生图
+    - "composite"        # 视频合成
+    - "caption"          # 字幕
+    - "thumbnail"        # 封面
+  
+  # TTS 配置
+  tts:
+    provider: "edge_tts"    # 免费！可选：edge_tts / fishaudio / openai
+    voice_zh: "zh-CN-XiaoxiaoNeural"   # 微软 Azure 神经语音
+    rate: "+0%"
+    pitch: "+0Hz"
+  
+  # 图像生成配置  
+  image_generation:
+    provider: "deepseek_image"  # 用 DeepSeek 生图（如未来支持），或 sd
+    fallback: "placeholder"     # 不可用时用占位图（让流程跑通）
+    style: "flat illustration, technology, modern, minimal"
+    
+  # 视频合成
+  composite:
+    backend: "ffmpeg"
+    transition_duration: 0.3
+    add_subtitles: true
+    add_logo_watermark: true
+  
+  output_dir: "output/videos"
+
+# --- 周报 Agent ---
+reporter:
+  # 周报生成时间
+  schedule: "0 20 * * 0"   # 每周日 20:00
+  
+  # 数据源
+  data_sources:
+    - "csdn_api"
+    - "bilibili_api"
+    - "github_api"
+  
+  # 报告格式
+  formats: ["markdown", "html"]
+  output_dir: "output/reports"
+  
+  # 是否自动发送（暂时先关闭，避免误发）
+  auto_send:
+    enabled: false
+    channels: []   # 后续可加 slack / 邮件 / 飞书
+
+# --- 数据存储 ---
+storage:
+  # 默认 SQLite，零部署
+  type: "sqlite"
+  path: "data/agent.db"
+
+# --- 日志 ---
+logging:
+  level: "INFO"   # DEBUG / INFO / WARNING / ERROR
+  file: "output/logs/agent.log"
+  max_size_mb: 50
+  backup_count: 5

@@ -1,0 +1,36 @@
+id: "zhihu"
+name: "知乎"
+display_name: "知乎"
+enabled: true
+
+profile:
+  audience: "中高端技术读者、决策者"
+  content_type: "opinion_with_depth"
+  preferred_length: "1500-2500 字"
+  language: "zh-CN"
+  
+style:
+  tone: "有观点、有讨论度、第一人称"
+  formatting: "议论文结构（论点-论据-反驳-总结）"
+  emoji_density: "low"
+  first_person: true
+  hashtags: false
+  
+seo:
+  enabled: true
+  keyword_density: "medium"
+  title_max_length: 60
+
+prompt_template: "prompts/platforms/zhihu.txt"
+
+publishing:
+  has_official_api: false
+  auto_publish_supported: false
+  manual_url: "https://zhuanlan.zhihu.com/write"
+
+required_elements:
+  - sponsor_attribution
+  - author_introduction
+
+output:
+  file_extension: "md"
