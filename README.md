@@ -22,6 +22,7 @@ DoraMate Promo Agent 是为 **DoraMate** 项目（基于 [dora-rs](https://dora-
 |---|---|---|
 | 🎯 一稿多发 | ✅ Phase 1 | 输入主题，自动生成 CSDN/小红书/知乎/B站/公众号 5 平台适配文案 |
 | 🎬 全AI视频生成 | ✅ Phase 5 MVP | 主题 → 脚本 → TTS 配音 → 图 → 字幕 → 成片（横屏+竖屏） |
+| 🌐 浏览器操作台 | ✅ Phase 3 MVP | `doramate-agent web`，电脑/手机输入主题生成视频与平台文案 |
 | 📊 选题推荐 | ⏳ Phase 2 | 抓取 GitHub Trending / arXiv / 热搜，每天推送选题 |
 | 📈 周报 Agent | ⏳ Phase 4 | 自动统计各平台数据，生成 KPI 报告 |
 | 🔗 UTM 链接 | ✅ | 流量漏斗追踪 |
@@ -74,11 +75,20 @@ doramate-agent create --topic "DoraMate 拖拽节点教程"
 # 生成视频（B站横屏 + 小红书竖屏）
 doramate-agent video --topic "5 分钟看懂 dora-rs"
 
+# 打开浏览器页面（电脑）
+doramate-agent web
+
+# 手机访问同一台电脑（同一 Wi-Fi 下）
+doramate-agent web --host 0.0.0.0 --port 8501
+
 # 只生成小红书 + B站
 doramate-agent create --topic "..." --platforms xiaohongshu,bilibili
 
 # 视频+背景音乐
 doramate-agent video --topic "..." --bgm assets/music/upbeat.mp3
+
+# 用外部 AI 生图工具替换分镜图片后重新合成视频
+doramate-agent recompose --work-dir output/videos/你的工作目录
 ```
 
 ---
@@ -146,9 +156,12 @@ doramate-agent video --topic "..." --bgm assets/music/upbeat.mp3
 - arXiv 论文摘要
 - 历史选题去重
 
-### ⏳ Phase 3：Streamlit Web UI
+### ✅ Phase 3 MVP：Streamlit Web UI
 - 浏览器操作（无需命令行）
-- 实时预览生成内容
+- 电脑/手机输入主题生成视频或平台文案
+- 替换外部 AI 生图素材后重新合成视频
+
+使用说明：[docs/WEB_UI.md](docs/WEB_UI.md)
 
 ### ⏳ Phase 4：数据回流 + 周报
 - CSDN/B站 API 数据采集

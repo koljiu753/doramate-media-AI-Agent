@@ -87,6 +87,35 @@ def cmd_video(args):
         print(f"    [{i}] {p}")
 
 
+def cmd_recompose(args):
+    """用已替换的分镜图片重新合成视频。"""
+    from .agents import VideoAgent
+
+    agent = VideoAgent()
+    bgm = Path(args.bgm) if args.bgm else None
+    outputs = agent.recompose(
+        work_dir=Path(args.work_dir),
+        bgm_path=bgm,
+        skip_landscape=args.no_landscape,
+        skip_portrait=args.no_portrait,
+    )
+
+    print("\n" + "=" * 60)
+    print("🎞️  视频重合成完成")
+    print("=" * 60)
+    if "video_landscape" in outputs:
+        print(f"🎞️  B 站横屏版：{outputs['video_landscape']}")
+    if "video_portrait" in outputs:
+        print(f"📱 小红书竖屏版：{outputs['video_portrait']}")
+
+
+def cmd_web(args):
+    """启动内置 Web UI。"""
+    from .web.server import run_server
+
+    return run_server(host=args.host, port=args.port)
+
+
 def cmd_doctor(args):
     """健康检查：所有依赖、配置、API Key 是否就绪。"""
     print("\n" + "=" * 60)
@@ -217,6 +246,20 @@ def main(argv=None):
     p_video.add_argument("--no-landscape", action="store_true", help="跳过横屏版（B站）")
     p_video.add_argument("--no-portrait", action="store_true", help="跳过竖屏版（小红书）")
     p_video.set_defaults(func=cmd_video)
+
+    # recompose
+    p_recompose = subparsers.add_parser("recompose", help="替换 AI 图片后重新合成视频")
+    p_recompose.add_argument("--work-dir", required=True, help="video 命令生成的工作目录")
+    p_recompose.add_argument("--bgm", help="背景音乐文件路径（可选）")
+    p_recompose.add_argument("--no-landscape", action="store_true", help="跳过横屏版（B站）")
+    p_recompose.add_argument("--no-portrait", action="store_true", help="跳过竖屏版（小红书）")
+    p_recompose.set_defaults(func=cmd_recompose)
+
+    # web
+    p_web = subparsers.add_parser("web", help="启动浏览器 Web UI（手机/电脑可用）")
+    p_web.add_argument("--host", default="127.0.0.1", help="监听地址；手机访问用 0.0.0.0")
+    p_web.add_argument("--port", type=int, default=8501, help="监听端口")
+    p_web.set_defaults(func=cmd_web)
 
     # topics（占位）
     p_topics = subparsers.add_parser("topics", help="选题推荐（Phase 2）")

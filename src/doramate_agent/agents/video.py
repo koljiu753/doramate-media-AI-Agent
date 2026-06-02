@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Optional
 
 from .base import BaseAgent
-from ..video.script import ScriptGenerator, VideoScript
+from ..video.script import ScriptGenerator, VideoScript, Scene
 from ..video.tts import EdgeTTS
 from ..video.subtitles import generate_srt
 from ..video.image_gen import PlaceholderImageGenerator, DEFAULT_LANDSCAPE, DEFAULT_PORTRAIT
@@ -184,4 +184,81 @@ class VideoAgent(BaseAgent):
         outputs["metadata"] = str(metadata_path)
 
         logger.info(f"\n🎉 视频生产完成！全部产物在：{work_dir}")
+        return outputs
+
+    def recompose(
+        self,
+        work_dir: Path,
+        bgm_path: Optional[Path] = None,
+        skip_landscape: bool = False,
+        skip_portrait: bool = False,
+    ) -> dict:
+        """
+        用工作目录里的脚本、音频和图片重新合成视频。
+
+        典型用法:
+        1. 先运行 `doramate-agent video ...`
+        2. 用 AI 生图工具按 `script.json` 里的 visual_description 生成图片
+        3. 覆盖 `images_landscape/scene_001.png` 等文件
+        4. 运行 `doramate-agent recompose --work-dir ...`
+        """
+        work_dir = Path(work_dir)
+        script_json_path = work_dir / "script.json"
+        if not script_json_path.exists():
+            raise FileNotFoundError(f"未找到脚本文件：{script_json_path}")
+        if not check_ffmpeg():
+            raise RuntimeError("未找到 ffmpeg，无法合成视频。")
+
+        data = json.loads(script_json_path.read_text(encoding="utf-8"))
+        scenes = [Scene(**s) for s in data.get("scenes", [])]
+        task_slug = work_dir.name.split("_", 2)[-1] if "_" in work_dir.name else work_dir.name
+        audio_paths = sorted((work_dir / "audio").glob("scene_*.mp3"))
+        if len(audio_paths) != len(scenes):
+            raise RuntimeError(
+                f"音频数量与分镜数量不匹配：audio={len(audio_paths)}, scenes={len(scenes)}"
+            )
+
+        outputs = {"work_dir": str(work_dir), "script_json": str(script_json_path)}
+
+        if not skip_landscape:
+            landscape_images = sorted((work_dir / "images_landscape").glob("scene_*.png"))
+            if len(landscape_images) != len(scenes):
+                raise RuntimeError(
+                    f"横屏图片数量与分镜数量不匹配：images={len(landscape_images)}, scenes={len(scenes)}"
+                )
+            srt_landscape = work_dir / "subtitles.srt"
+            generate_srt(scenes, audio_paths, srt_landscape)
+            landscape_path = work_dir / f"{task_slug}_横屏_bilibili_recomposed.mp4"
+            VideoComposer(target_size=DEFAULT_LANDSCAPE).compose(
+                image_paths=landscape_images,
+                audio_paths=audio_paths,
+                scene_durations=[s.duration_seconds for s in scenes],
+                output_path=landscape_path,
+                srt_path=srt_landscape,
+                bgm_path=bgm_path,
+            )
+            outputs["video_landscape"] = str(landscape_path)
+
+        if not skip_portrait:
+            portrait_images = sorted((work_dir / "images_portrait").glob("scene_*.png"))
+            if len(portrait_images) != len(scenes):
+                raise RuntimeError(
+                    f"竖屏图片数量与分镜数量不匹配：images={len(portrait_images)}, scenes={len(scenes)}"
+                )
+            srt_portrait = work_dir / "subtitles_portrait.srt"
+            generate_srt(scenes, audio_paths, srt_portrait)
+            portrait_path = work_dir / f"{task_slug}_竖屏_xiaohongshu_recomposed.mp4"
+            VideoComposer(target_size=DEFAULT_PORTRAIT).compose(
+                image_paths=portrait_images,
+                audio_paths=audio_paths,
+                scene_durations=[s.duration_seconds for s in scenes],
+                output_path=portrait_path,
+                srt_path=srt_portrait,
+                bgm_path=bgm_path,
+            )
+            outputs["video_portrait"] = str(portrait_path)
+
+        metadata_path = work_dir / "recompose_metadata.json"
+        metadata_path.write_text(json.dumps(outputs, ensure_ascii=False, indent=2), encoding="utf-8")
+        outputs["metadata"] = str(metadata_path)
         return outputs
