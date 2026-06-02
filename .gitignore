@@ -49,6 +49,7 @@ data/topic_history.db
 # 临时文件
 .tmp_*/
 *.tmp
+backup_*/
 
 # 用户上传的 brand 资源（如有敏感）
 assets/brand/wechat_group_qr.png
