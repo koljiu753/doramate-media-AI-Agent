@@ -70,6 +70,8 @@ def cmd_video(args):
         voice_preset=args.voice_preset,
         rate=args.rate,
         pitch=args.pitch,
+        style_preset=args.style_preset,
+        style_hint=args.style_hint,
     )
     
     print("\n" + "=" * 60)
@@ -81,6 +83,8 @@ def cmd_video(args):
     print(f"📝 简介：\n{outputs['description'][:200]}...")
     if outputs.get("style_guide"):
         print(f"🎨 风格锁：{outputs['style_guide']}")
+    if outputs.get("style_preset"):
+        print(f"🧭 视觉预设：{outputs['style_preset']}")
     if outputs.get("image_prompt_sheet"):
         print(f"🖼️  生图提示词：{outputs['image_prompt_sheet']}")
     if "video_landscape" in outputs:
@@ -110,6 +114,21 @@ def cmd_voices(args):
         voices = asyncio.run(EdgeTTS.list_voices(language=args.language))
         for item in voices:
             print(f"  {item.get('ShortName')} | {item.get('Gender')} | {item.get('FriendlyName')}")
+
+
+def cmd_styles(args):
+    """列出视频生图风格预设。"""
+    from .utils import get_agent_config
+
+    cfg = get_agent_config()
+    presets = cfg.get("video.visual_style.presets", {}) or {}
+    default_preset = cfg.get("video.visual_style.default_preset", "")
+    print("\n视频视觉风格预设：")
+    for name, data in presets.items():
+        marker = " (default)" if name == default_preset else ""
+        print(f"\n  {name}{marker}")
+        print(f"    {data.get('name', '')}")
+        print(f"    {data.get('quality_bar', '')}")
 
 
 def cmd_recompose(args):
@@ -274,6 +293,8 @@ def main(argv=None):
     p_video.add_argument("--voice", help="Edge-TTS 原始音色 ID，例如 zh-CN-YunxiNeural")
     p_video.add_argument("--rate", help="语速，例如 +8%% 或 -5%%")
     p_video.add_argument("--pitch", help="音调，例如 +0Hz")
+    p_video.add_argument("--style-preset", help="视觉风格预设：editorial/isometric/screenflow/bold_cover")
+    p_video.add_argument("--style-hint", help="额外审美偏好，例如：更像成熟开源社区官网插画，不要儿童教育感")
     p_video.set_defaults(func=cmd_video)
 
     # voices
@@ -281,6 +302,10 @@ def main(argv=None):
     p_voices.add_argument("--online", action="store_true", help="在线查询 Edge-TTS 完整音色列表")
     p_voices.add_argument("--language", default="zh-CN", help="语言过滤，例如 zh-CN")
     p_voices.set_defaults(func=cmd_voices)
+
+    # styles
+    p_styles = subparsers.add_parser("styles", help="列出视频生图风格预设")
+    p_styles.set_defaults(func=cmd_styles)
 
     # recompose
     p_recompose = subparsers.add_parser("recompose", help="替换 AI 图片后重新合成视频")

@@ -71,6 +71,16 @@ def _home(message: str = "") -> bytes:
       <textarea name="hint">{html.escape(DEFAULT_HINT)}</textarea>
       <label>目标时长（秒）</label>
       <input name="duration" type="number" value="90" min="45" max="240">
+      <label>视觉风格预设</label>
+      <select name="style_preset">
+        <option value="">使用配置默认风格</option>
+        <option value="editorial">editorial 成熟社区编辑插画</option>
+        <option value="isometric">isometric 低饱和系统地图</option>
+        <option value="screenflow">screenflow 文档/界面流程感</option>
+        <option value="bold_cover">bold_cover 强封面风格</option>
+      </select>
+      <label>额外审美偏好（可选）</label>
+      <input name="style_hint" placeholder="例如 更像成熟开源社区官网插画，不要儿童教育感">
       <label>音色预设</label>
       <select name="voice_preset">
         <option value="">使用配置默认音色</option>
@@ -170,6 +180,8 @@ def _render_video_result(outputs: dict) -> str:
                 pitch=html.escape(outputs.get("voice_pitch", "")),
             )
         )
+    if outputs.get("style_preset"):
+        lines.append(f"<p>视觉风格：<code>{html.escape(outputs.get('style_preset', ''))}</code></p>")
     for key, label in [("video_landscape", "B站横屏版"), ("video_portrait", "小红书/视频号竖屏版")]:
         if outputs.get(key):
             lines.append(f"<p>{label}：<code>{html.escape(outputs[key])}</code></p>")
@@ -213,6 +225,8 @@ class AgentRequestHandler(BaseHTTPRequestHandler):
                     voice_preset=data.get("voice_preset") or None,
                     rate=data.get("rate") or None,
                     pitch=data.get("pitch") or None,
+                    style_preset=data.get("style_preset") or None,
+                    style_hint=data.get("style_hint") or None,
                 )
                 self._send(_home(_render_video_result(outputs)))
                 return

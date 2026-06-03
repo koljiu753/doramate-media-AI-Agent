@@ -48,14 +48,9 @@ class VideoAgent(BaseAgent):
         tts_rate = self.agent_config.get("video.tts.rate", "+0%")
         tts_pitch = self.agent_config.get("video.tts.pitch", "+0Hz")
         self.tts = EdgeTTS(voice=tts_voice, rate=tts_rate, pitch=tts_pitch)
-        self.visual_style = {
-            "name": self.agent_config.get("video.visual_style.name", "DoraCN clean tech explainer"),
-            "palette": self.agent_config.get("video.visual_style.palette", ""),
-            "composition": self.agent_config.get("video.visual_style.composition", ""),
-            "material": self.agent_config.get("video.visual_style.material", ""),
-            "typography": self.agent_config.get("video.visual_style.typography", ""),
-            "negative_prompt": self.agent_config.get("video.visual_style.negative_prompt", ""),
-        }
+        self.style_presets = self.agent_config.get("video.visual_style.presets", {}) or {}
+        default_style = self.agent_config.get("video.visual_style.default_preset", "editorial")
+        self.visual_style = self._resolve_visual_style(default_style)
         
         self.image_gen = PlaceholderImageGenerator()
 
@@ -72,6 +67,8 @@ class VideoAgent(BaseAgent):
         voice_preset: Optional[str] = None,
         rate: Optional[str] = None,
         pitch: Optional[str] = None,
+        style_preset: Optional[str] = None,
+        style_hint: Optional[str] = None,
     ) -> dict:
         """
         端到端生成视频。
@@ -88,6 +85,8 @@ class VideoAgent(BaseAgent):
             voice_preset: 音色预设名
             rate: 语速，如 +8%
             pitch: 音调，如 +0Hz
+            style_preset: 视觉风格预设名
+            style_hint: 额外审美偏好，会追加到风格锁
         
         Returns:
             dict: 包含所有产物的路径
@@ -99,6 +98,10 @@ class VideoAgent(BaseAgent):
                 "  macOS:  brew install ffmpeg\n"
                 "  Windows: https://ffmpeg.org/download.html"
             )
+
+        if style_preset or style_hint:
+            default_style = self.agent_config.get("video.visual_style.default_preset", "editorial")
+            self.visual_style = self._resolve_visual_style(style_preset or default_style, style_hint=style_hint)
 
         # === 任务工作目录 ===
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
@@ -147,6 +150,7 @@ class VideoAgent(BaseAgent):
             "review_checklist": str(production_pack["review_checklist"]),
             "next_steps": str(production_pack["next_steps"]),
             "style_guide": str(production_pack["style_guide"]),
+            "style_preset": self.visual_style.get("preset", ""),
             "voice": tts.voice,
             "voice_rate": tts.rate,
             "voice_pitch": tts.pitch,
@@ -293,11 +297,13 @@ class VideoAgent(BaseAgent):
             f"风格名称：{self.visual_style['name']}",
             "",
             "## 固定风格",
+            f"- 预设：{self.visual_style.get('preset', '')}",
             f"- 色彩：{self.visual_style['palette']}",
             f"- 构图：{self.visual_style['composition']}",
             f"- 材质：{self.visual_style['material']}",
             f"- 字幕/文字区：{self.visual_style['typography']}",
-            "",
+            f"- 质量标准：{self.visual_style['quality_bar']}",
+        "",
             "## 禁用项",
             self.visual_style["negative_prompt"],
             "",
@@ -373,6 +379,9 @@ class VideoAgent(BaseAgent):
             f"Composition: {self.visual_style['composition']}. "
             f"Material: {self.visual_style['material']}. "
             f"Typography/subtitle area: {self.visual_style['typography']}. "
+            f"Quality bar: {self.visual_style['quality_bar']}. "
+            "Design it as one finished editorial illustration, not a rough concept sketch. "
+            "Use one clear visual metaphor, strong hierarchy, balanced negative space, precise shapes, and consistent lighting. "
             "Keep the same art direction, colors, line weight, UI shape language, and lighting across all scenes. "
             f"Negative prompt: {self.visual_style['negative_prompt']}."
         )
@@ -380,14 +389,35 @@ class VideoAgent(BaseAgent):
     def _landscape_prompt(self, text: str) -> str:
         return (
             f"{self._style_lock()} SCENE CONTENT: {text}. "
-            "Aspect ratio 16:9 horizontal. Clear focal subject, generous whitespace, bottom safe area for Chinese subtitles."
+            "Aspect ratio 16:9 horizontal. Clear focal subject, cinematic but clean crop, generous whitespace, bottom safe area for Chinese subtitles. "
+            "No small text, no decorative filler, no random icons."
         )
 
     def _portrait_prompt(self, text: str) -> str:
         return (
             f"{self._style_lock()} SCENE CONTENT: {text}. "
-            "Aspect ratio 9:16 vertical. Mobile-first composition, large central subject, bottom safe area for Chinese subtitles."
+            "Aspect ratio 9:16 vertical. Mobile-first composition, large central subject, clear top-to-bottom reading order, bottom safe area for Chinese subtitles. "
+            "No small text, no decorative filler, no random icons."
         )
+
+    def _resolve_visual_style(self, preset: str, style_hint: Optional[str] = None) -> dict[str, str]:
+        preset_data = self.style_presets.get(preset)
+        if not preset_data:
+            available = ", ".join(sorted(self.style_presets)) or "(none)"
+            raise ValueError(f"未知视觉风格预设：{preset}。可选：{available}")
+        style = {
+            "preset": preset,
+            "name": preset_data.get("name", preset),
+            "palette": preset_data.get("palette", ""),
+            "composition": preset_data.get("composition", ""),
+            "material": preset_data.get("material", ""),
+            "typography": preset_data.get("typography", ""),
+            "quality_bar": preset_data.get("quality_bar", ""),
+            "negative_prompt": preset_data.get("negative_prompt", ""),
+        }
+        if style_hint:
+            style["quality_bar"] = f"{style['quality_bar']}; user preference: {style_hint}"
+        return style
 
     def _make_tts(
         self,

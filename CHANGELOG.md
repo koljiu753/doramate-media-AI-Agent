@@ -11,6 +11,7 @@
 - 视频生成时新增生产包: `video_script.md`、`ai_image_prompts.md`、`review_checklist.md`、`NEXT_STEPS.md`,便于使用外部 AI 生图会员账号完成素材替换和发布审核。
 - 新增 `STYLE_GUIDE.md` 视觉风格锁,让同一条视频所有分镜图片使用统一色彩、构图、材质和禁用项。
 - 新增 TTS 音色选择: `doramate-agent voices`、`video --voice-preset/--voice/--rate/--pitch`,Web UI 同步支持音色预设。
+- 新增视频生图风格预设: `doramate-agent styles`、`video --style-preset/--style-hint`,改善单张图片提示词的审美质量和可控性。
 
 ### Changed
 - 升级 5 个平台 prompt 到 v2.2,强化输出协议,避免"好的/收到/以下是"等 meta 开场白。

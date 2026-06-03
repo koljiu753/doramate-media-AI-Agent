@@ -24,7 +24,7 @@ DoraMate Promo Agent 是为 **DoraMate** 项目（基于 [dora-rs](https://dora-
 | 🎬 全AI视频生成 | ✅ Phase 5 MVP | 主题 → 脚本 → TTS 配音 → 图 → 字幕 → 成片（横屏+竖屏） |
 | 🌐 浏览器操作台 | ✅ Phase 3 MVP | `doramate-agent web`，电脑/手机输入主题生成视频与平台文案 |
 | 🧾 视频生产包 | ✅ | 自动输出可读脚本、AI 生图提示词清单、重合成说明和发布前审核清单 |
-| 🎨 视觉风格锁 | ✅ | 每条视频自动生成 `STYLE_GUIDE.md`，统一分镜生图风格 |
+| 🎨 视觉风格锁 | ✅ | 每条视频自动生成 `STYLE_GUIDE.md`，支持多套风格预设，统一分镜生图风格 |
 | 🎙️ 音色选择 | ✅ | 支持 `--voice-preset` / `--voice` / `--rate` 切换 Edge-TTS 音色 |
 | 📊 选题推荐 | ⏳ Phase 2 | 抓取 GitHub Trending / arXiv / 热搜，每天推送选题 |
 | 📈 周报 Agent | ⏳ Phase 4 | 自动统计各平台数据，生成 KPI 报告 |
@@ -81,6 +81,10 @@ doramate-agent video --topic "5 分钟看懂 dora-rs"
 # 换音色：推荐先用 voices 看预设
 doramate-agent voices
 doramate-agent video --topic "5 分钟看懂 dora-rs" --voice-preset professional --rate +6%
+
+# 换视觉风格：先看 styles，再指定 style-preset
+doramate-agent styles
+doramate-agent video --topic "dora-rs 新手从哪里开始：中文社区学习路线" --duration 90 --style-preset editorial --style-hint "更像成熟开源社区官网插画，不要儿童教育感"
 
 # 生成后会得到:
 # - video_script.md          可读分镜脚本

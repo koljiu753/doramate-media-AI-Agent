@@ -32,7 +32,7 @@ http://你的电脑局域网IP:8501
 - 用外部 AI 生图工具替换分镜图片后,一键重新合成视频
 - 每次视频生成都会附带 `video_script.md`、`ai_image_prompts.md`、`review_checklist.md` 和 `NEXT_STEPS.md`
 - 每次视频生成都会附带 `STYLE_GUIDE.md`,用于统一整条视频所有 AI 生图风格
-- 视频生成页支持选择 Edge-TTS 音色预设,也可以填写原始音色 ID
+- 视频生成页支持选择视觉风格预设、Edge-TTS 音色预设,也可以填写原始音色 ID
 
 ## AI 生图工作流
 
@@ -50,6 +50,27 @@ http://你的电脑局域网IP:8501
    - `images_landscape/scene_001.png`
    - `images_portrait/scene_001.png`
 8. 回到 Web UI 的“替换图片后重合成”页,重新合成成片
+
+## 视觉风格选择
+
+命令行查看可用风格:
+
+```bash
+doramate-agent styles
+```
+
+常用预设:
+
+- `editorial`: 成熟社区编辑插画,默认推荐
+- `isometric`: 低饱和系统地图,适合讲流程/路线
+- `screenflow`: 文档/界面流程感,适合讲 quick-start、概念和资料入口
+- `bold_cover`: 强封面风格,适合第一帧/封面
+
+如果觉得单张图“不好看”,优先换 `--style-preset`,再加 `--style-hint` 收窄审美:
+
+```bash
+doramate-agent video --topic "dora-rs 新手从哪里开始：中文社区学习路线" --duration 90 --style-preset editorial --style-hint "更像成熟开源社区官网插画，不要儿童教育感"
+```
 
 ## 音色选择
 

@@ -103,12 +103,40 @@ video:
 
   # 视觉风格锁：用于让同一条视频的所有 AI 生图保持一致
   visual_style:
-    name: "DoraCN clean tech explainer"
-    palette: "white background, deep navy #1B1464, Dora blue #2563EB, sky blue #60A5FA, small green success accents"
-    composition: "clean editorial technology explainer, centered subject, generous whitespace, simple dataflow lines, rounded 8px UI shapes"
-    material: "flat vector illustration mixed with subtle isometric UI panels, crisp edges, no photorealistic people"
-    typography: "minimal Chinese tech typography area, leave empty space for subtitles, no fake readable UI text unless explicitly requested"
-    negative_prompt: "no fake DoraMate product screenshot, no real robot hardware demo, no messy dashboard, no random neon cyberpunk, no brown/orange palette, no inconsistent characters, no watermark"
+    default_preset: "editorial"
+    presets:
+      editorial:
+        name: "DoraCN editorial learning route"
+        palette: "clean warm white #F8FAFC, ink #111827, Dora blue #2563EB, cyan #38BDF8, soft green #22C55E accents only"
+        composition: "premium Chinese tech media cover illustration, one clear metaphor per scene, 3-layer depth, large calm focal object, plenty of empty subtitle space"
+        material: "crisp vector editorial illustration, soft isometric panels, subtle paper grain, clean shadows, no cheap clipart, no generic stock style"
+        typography: "minimal poster-like Chinese tech layout area, no fake readable UI text, leave lower third clear for subtitles"
+        quality_bar: "looks like a polished article cover from a mature open-source community, not a random AI generated education slide"
+        negative_prompt: "no fake DoraMate product screenshot, no real robot hardware demo, no messy dashboard, no neon cyberpunk, no beige/brown/orange palette, no 3D toy style, no anime character, no corporate stock people, no watermark"
+      isometric:
+        name: "DoraCN soft isometric system map"
+        palette: "matte off-white #F8FAFC, deep navy #1B1464, Dora blue #2563EB, cyan #60A5FA, small green status accents"
+        composition: "soft isometric knowledge map, connected modules, simple dataflow lines, spacious grid, one main object and two supporting objects"
+        material: "flat-isometric vector, crisp edges, restrained shadows, consistent 8px rounded UI blocks, no photorealistic textures"
+        typography: "no readable fake interface text, reserve subtitle-safe bottom area"
+        quality_bar: "clear enough for a technical explainer video, mature and restrained, not decorative filler"
+        negative_prompt: "no fake DoraMate product screenshot, no real robot hardware demo, no cluttered dashboard, no neon, no dark sci-fi, no toy-like 3D, no watermark"
+      screenflow:
+        name: "DoraCN abstract screenflow"
+        palette: "white and light gray workspace, ink #111827, Dora blue #2563EB, cyan highlights, green success dots"
+        composition: "abstract browser/code/document panels showing learning progress, clean arrows, route cards, checkpoints, no real product UI"
+        material: "high-fidelity vector UI illustration, subtle shadows, clean grid, modern developer documentation aesthetic"
+        typography: "use blocks and lines instead of fake readable text, keep captions area empty"
+        quality_bar: "feels like official developer documentation artwork, polished but not flashy"
+        negative_prompt: "no DoraMate launched UI screenshot, no fake app marketplace, no one-click deploy screen, no random charts, no clutter, no watermark"
+      bold_cover:
+        name: "DoraCN bold social cover"
+        palette: "white base, strong Dora blue #2563EB, deep ink #111827, cyan glow used sparingly, one green accent"
+        composition: "bold first-frame social video cover, oversized central symbol, diagonal rhythm, high contrast, readable negative space"
+        material: "clean vector poster, sharp geometry, subtle gradient only inside objects, not a full gradient background"
+        typography: "large empty headline zone, do not generate small fake text"
+        quality_bar: "strong enough for Bilibili/Xiaohongshu first frame while still looking like a serious open-source community"
+        negative_prompt: "no tacky neon cyberpunk, no busy collage, no anime, no photorealistic robot, no fake DoraMate product screenshot, no watermark"
     
   # 视频合成
   composite:
