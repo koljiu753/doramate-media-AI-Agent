@@ -30,6 +30,7 @@ http://你的电脑局域网IP:8501
 - 输入主题,生成 CSDN/小红书/知乎/B站/公众号文案
 - 查看最近产物
 - 用外部 AI 生图工具替换分镜图片后,一键重新合成视频
+- 每次视频生成都会附带 `video_script.md`、`ai_image_prompts.md`、`review_checklist.md` 和 `NEXT_STEPS.md`
 
 ## AI 生图工作流
 
@@ -38,8 +39,8 @@ http://你的电脑局域网IP:8501
 如果你有即梦、可灵、Midjourney、DALL-E 等账号:
 
 1. 在 Web UI 生成视频初版
-2. 打开工作目录里的 `script.json`
-3. 复制每个 scene 的 `visual_description`
+2. 打开工作目录里的 `ai_image_prompts.md`
+3. 复制每个 Scene 的横屏/竖屏提示词
 4. 用 AI 生图工具生成对应图片
 5. 覆盖:
    - `images_landscape/scene_001.png`

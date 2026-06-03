@@ -105,6 +105,7 @@ class VideoAgent(BaseAgent):
             json.dumps(script.to_dict(), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        production_pack = self._write_production_pack(script, work_dir)
         logger.info(f"  ✓ 脚本已生成（{len(script.scenes)} 个分镜，总时长 ~{script.total_duration:.0f}秒）")
 
         # === 步骤 2：TTS 生成口播 ===
@@ -124,6 +125,10 @@ class VideoAgent(BaseAgent):
             "title_candidates": script.title_candidates,
             "description": script.description,
             "thumbnail_prompts": script.thumbnail_prompts,
+            "script_markdown": str(production_pack["script_markdown"]),
+            "image_prompt_sheet": str(production_pack["image_prompt_sheet"]),
+            "review_checklist": str(production_pack["review_checklist"]),
+            "next_steps": str(production_pack["next_steps"]),
         }
 
         # === 步骤 4-5：合成横屏版（B站） ===
@@ -185,6 +190,148 @@ class VideoAgent(BaseAgent):
 
         logger.info(f"\n🎉 视频生产完成！全部产物在：{work_dir}")
         return outputs
+
+    def _write_production_pack(self, script: VideoScript, work_dir: Path) -> dict[str, Path]:
+        """写出人工可读的视频生产包。"""
+        script_md = work_dir / "video_script.md"
+        prompt_sheet = work_dir / "ai_image_prompts.md"
+        review_checklist = work_dir / "review_checklist.md"
+        next_steps = work_dir / "NEXT_STEPS.md"
+
+        script_lines = [
+            f"# {script.selected_title}",
+            "",
+            "## 标题备选",
+            *[f"- {title}" for title in script.title_candidates],
+            "",
+            "## 视频简介",
+            script.description,
+            "",
+            "## 分镜脚本",
+            "",
+            "| 场景 | 时长 | 屏幕文字 | 口播 | 画面描述 |",
+            "|---|---:|---|---|---|",
+        ]
+        for scene in script.scenes:
+            script_lines.append(
+                "| {index} | {duration:g}s | {text} | {narration} | {visual} |".format(
+                    index=scene.index,
+                    duration=scene.duration_seconds,
+                    text=self._md_cell(scene.on_screen_text),
+                    narration=self._md_cell(scene.narration),
+                    visual=self._md_cell(scene.visual_description),
+                )
+            )
+        script_md.write_text("\n".join(script_lines), encoding="utf-8")
+
+        prompt_lines = [
+            "# AI 生图提示词清单",
+            "",
+            "用途：把每个分镜的提示词复制到即梦、可灵、Midjourney、DALL-E 等工具生成图片。",
+            "",
+            "生成后覆盖对应文件：",
+            "- 横屏：`images_landscape/scene_001.png`、`scene_002.png` ...",
+            "- 竖屏：`images_portrait/scene_001.png`、`scene_002.png` ...",
+            "",
+            "建议：横屏使用 16:9，竖屏使用 9:16；不要生成 DoraMate 已上线产品 UI，不要生成真实硬件 demo。",
+            "",
+        ]
+        for scene in script.scenes:
+            prompt_lines.extend(
+                [
+                    f"## Scene {scene.index:03d}",
+                    "",
+                    f"屏幕文字：{scene.on_screen_text or '无'}",
+                    "",
+                    "### 横屏 16:9",
+                    self._landscape_prompt(scene.visual_description),
+                    "",
+                    f"保存为：`images_landscape/scene_{scene.index:03d}.png`",
+                    "",
+                    "### 竖屏 9:16",
+                    self._portrait_prompt(scene.visual_description),
+                    "",
+                    f"保存为：`images_portrait/scene_{scene.index:03d}.png`",
+                    "",
+                ]
+            )
+        if script.thumbnail_prompts:
+            prompt_lines.extend(["## 封面提示词", ""])
+            for i, prompt in enumerate(script.thumbnail_prompts, 1):
+                prompt_lines.extend([f"### 封面 {i}", prompt, ""])
+        prompt_sheet.write_text("\n".join(prompt_lines), encoding="utf-8")
+
+        checklist_lines = [
+            "# 发布前审核清单",
+            "",
+            "## 事实安全",
+            "- [ ] 没有写“打开 DoraMate 网页版”",
+            "- [ ] 没有写“拖拽节点已经能跑起来”",
+            "- [ ] 没有写“节点市场 / 一键部署 / 实时监控已实现”",
+            "- [ ] 没有写“机器人真实动了”或真实硬件 demo",
+            "- [ ] 没有把 dora-rs 的能力写成 DoraMate 已实现功能",
+            "- [ ] 没有虚构采访、用户反馈、团队合影或发布会现场",
+            "",
+            "## 身份与标注",
+            "- [ ] 冯小婷身份保持为产品/UX 设计师、项目执行成员",
+            "- [ ] 没有写成学生、算法工程师、ROS 老用户或 dora-rs 维护者",
+            "- [ ] 已标注：源起之道支持｜Supported by Upstream Labs",
+            "",
+            "## 视频质量",
+            "- [ ] 字幕没有遮挡主体",
+            "- [ ] 竖屏版本文字在手机上可读",
+            "- [ ] 每个分镜画面与口播一致",
+            "- [ ] 封面标题不夸大、不虚构产品能力",
+            "",
+            "## 发布链接",
+            "- [ ] DoraMate：https://github.com/DoraCN/DoraMate",
+            "- [ ] Agent：https://github.com/koljiu753/doramate-media-AI-Agent",
+            "- [ ] Dora 中文社区：https://koljiu753.github.io/dora-cn/",
+        ]
+        review_checklist.write_text("\n".join(checklist_lines), encoding="utf-8")
+
+        next_lines = [
+            "# 下一步操作",
+            "",
+            "1. 检查 `video_script.md`，确认脚本没有事实风险。",
+            "2. 打开 `ai_image_prompts.md`，复制每个 Scene 的横屏/竖屏提示词去 AI 生图工具。",
+            "3. 把生成图片覆盖到 `images_landscape/` 和 `images_portrait/`。",
+            "4. 运行：",
+            "",
+            "```powershell",
+            f'doramate-agent recompose --work-dir "{work_dir}"',
+            "```",
+            "",
+            "5. 按 `review_checklist.md` 做发布前检查。",
+        ]
+        next_steps.write_text("\n".join(next_lines), encoding="utf-8")
+
+        return {
+            "script_markdown": script_md,
+            "image_prompt_sheet": prompt_sheet,
+            "review_checklist": review_checklist,
+            "next_steps": next_steps,
+        }
+
+    @staticmethod
+    def _md_cell(text: str) -> str:
+        return (text or "").replace("|", "\\|").replace("\n", "<br>")
+
+    @staticmethod
+    def _landscape_prompt(text: str) -> str:
+        return (
+            f"{text}. 16:9 horizontal composition, clean technology explainer style, "
+            "modern Chinese open-source community visual, clear focal subject, no fake product UI, "
+            "no real robot hardware demo, leave safe space for Chinese subtitles at the bottom."
+        )
+
+    @staticmethod
+    def _portrait_prompt(text: str) -> str:
+        return (
+            f"{text}. 9:16 vertical composition for short video, clean technology explainer style, "
+            "large readable central subject, mobile-first layout, no fake product UI, "
+            "no real robot hardware demo, leave safe space for Chinese subtitles at the bottom."
+        )
 
     def recompose(
         self,

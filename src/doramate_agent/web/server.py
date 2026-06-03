@@ -152,6 +152,14 @@ def _render_video_result(outputs: dict) -> str:
             lines.append(f"<p>{label}：<code>{html.escape(outputs[key])}</code></p>")
     if outputs.get("script_json"):
         lines.append(f"<p>分镜脚本：<code>{html.escape(outputs['script_json'])}</code></p>")
+    for key, label in [
+        ("script_markdown", "可读脚本"),
+        ("image_prompt_sheet", "AI 生图提示词清单"),
+        ("review_checklist", "发布前审核清单"),
+        ("next_steps", "下一步操作说明"),
+    ]:
+        if outputs.get(key):
+            lines.append(f"<p>{label}：<code>{html.escape(outputs[key])}</code></p>")
     return "\n".join(lines)
 
 

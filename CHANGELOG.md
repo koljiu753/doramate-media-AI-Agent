@@ -8,6 +8,7 @@
 - 新增 `doramate-agent web` 命令,提供 Streamlit 浏览器页面,支持电脑/手机输入主题生成视频或多平台文案。
 - 新增 `doramate-agent recompose` 命令,支持外部 AI 生图工具替换分镜图片后重新合成横屏/竖屏视频。
 - 新增 `docs/WEB_UI.md`,记录手机访问、Web UI 和 AI 生图替换流程。
+- 视频生成时新增生产包: `video_script.md`、`ai_image_prompts.md`、`review_checklist.md`、`NEXT_STEPS.md`,便于使用外部 AI 生图会员账号完成素材替换和发布审核。
 
 ### Changed
 - 升级 5 个平台 prompt 到 v2.2,强化输出协议,避免"好的/收到/以下是"等 meta 开场白。

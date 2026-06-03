@@ -23,6 +23,7 @@ DoraMate Promo Agent 是为 **DoraMate** 项目（基于 [dora-rs](https://dora-
 | 🎯 一稿多发 | ✅ Phase 1 | 输入主题，自动生成 CSDN/小红书/知乎/B站/公众号 5 平台适配文案 |
 | 🎬 全AI视频生成 | ✅ Phase 5 MVP | 主题 → 脚本 → TTS 配音 → 图 → 字幕 → 成片（横屏+竖屏） |
 | 🌐 浏览器操作台 | ✅ Phase 3 MVP | `doramate-agent web`，电脑/手机输入主题生成视频与平台文案 |
+| 🧾 视频生产包 | ✅ | 自动输出可读脚本、AI 生图提示词清单、重合成说明和发布前审核清单 |
 | 📊 选题推荐 | ⏳ Phase 2 | 抓取 GitHub Trending / arXiv / 热搜，每天推送选题 |
 | 📈 周报 Agent | ⏳ Phase 4 | 自动统计各平台数据，生成 KPI 报告 |
 | 🔗 UTM 链接 | ✅ | 流量漏斗追踪 |
@@ -74,6 +75,12 @@ doramate-agent create --topic "DoraMate 拖拽节点教程"
 
 # 生成视频（B站横屏 + 小红书竖屏）
 doramate-agent video --topic "5 分钟看懂 dora-rs"
+
+# 生成后会得到:
+# - video_script.md          可读分镜脚本
+# - ai_image_prompts.md      横屏/竖屏 AI 生图提示词清单
+# - review_checklist.md      发布前审核清单
+# - NEXT_STEPS.md            替换图片与重合成步骤
 
 # 打开浏览器页面（电脑）
 doramate-agent web
