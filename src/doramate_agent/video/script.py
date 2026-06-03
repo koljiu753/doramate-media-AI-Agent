@@ -109,6 +109,8 @@ GitHub: {project_github}
 【关键约束】
 - 所有 scenes 的 duration_seconds 加起来应该 ≈ 180 秒
 - visual_description 要详细到能让 AI 直接生图（描述具体物体、构图、风格、色彩）
+- visual_description 只描述该分镜的主体内容与构图，不要自行切换画风；统一画风由后续 STYLE LOCK 控制
+- 不要要求生成 DoraMate 真实产品截图、真实机器人硬件 demo 或已上线 UI；只能生成概念图、学习路线图、数据流示意、官网/开源社区氛围图
 - narration 要口语化，每段 15-30 字符为宜，避免长难句
 - 必须是合法可解析的 JSON（用双引号，不要尾随逗号）
 - 视频结尾要有 CTA（关注/点赞/GitHub搜项目名）

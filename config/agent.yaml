@@ -88,12 +88,27 @@ video:
     voice_zh: "zh-CN-XiaoxiaoNeural"   # 微软 Azure 神经语音
     rate: "+0%"
     pitch: "+0Hz"
+    presets:
+      default: "zh-CN-XiaoxiaoNeural"       # 通用女声，亲切
+      professional: "zh-CN-YunxiNeural"     # 男声，专业
+      warm: "zh-CN-XiaoyiNeural"            # 女声，温暖
+      energetic: "zh-CN-YunjianNeural"      # 男声，活力
+      documentary: "zh-CN-YunyangNeural"    # 男声，纪录片旁白感
   
   # 图像生成配置  
   image_generation:
     provider: "deepseek_image"  # 用 DeepSeek 生图（如未来支持），或 sd
     fallback: "placeholder"     # 不可用时用占位图（让流程跑通）
     style: "flat illustration, technology, modern, minimal"
+
+  # 视觉风格锁：用于让同一条视频的所有 AI 生图保持一致
+  visual_style:
+    name: "DoraCN clean tech explainer"
+    palette: "white background, deep navy #1B1464, Dora blue #2563EB, sky blue #60A5FA, small green success accents"
+    composition: "clean editorial technology explainer, centered subject, generous whitespace, simple dataflow lines, rounded 8px UI shapes"
+    material: "flat vector illustration mixed with subtle isometric UI panels, crisp edges, no photorealistic people"
+    typography: "minimal Chinese tech typography area, leave empty space for subtitles, no fake readable UI text unless explicitly requested"
+    negative_prompt: "no fake DoraMate product screenshot, no real robot hardware demo, no messy dashboard, no random neon cyberpunk, no brown/orange palette, no inconsistent characters, no watermark"
     
   # 视频合成
   composite:

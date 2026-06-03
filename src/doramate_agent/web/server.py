@@ -71,6 +71,21 @@ def _home(message: str = "") -> bytes:
       <textarea name="hint">{html.escape(DEFAULT_HINT)}</textarea>
       <label>目标时长（秒）</label>
       <input name="duration" type="number" value="90" min="45" max="240">
+      <label>音色预设</label>
+      <select name="voice_preset">
+        <option value="">使用配置默认音色</option>
+        <option value="default">default 女声通用</option>
+        <option value="professional">professional 男声专业</option>
+        <option value="warm">warm 女声温暖</option>
+        <option value="energetic">energetic 男声活力</option>
+        <option value="documentary">documentary 男声旁白</option>
+      </select>
+      <label>自定义 Edge-TTS 音色 ID（可选，优先级高于预设）</label>
+      <input name="voice" placeholder="例如 zh-CN-YunxiNeural">
+      <label>语速（可选）</label>
+      <input name="rate" placeholder="例如 +8% 或 -5%">
+      <label>音调（可选）</label>
+      <input name="pitch" placeholder="例如 +0Hz">
       <label>背景音乐路径（可选）</label>
       <input name="bgm" placeholder="D:\\\\music\\\\bgm.mp3">
       <p><label><input type="checkbox" name="no_landscape"> 跳过横屏版</label></p>
@@ -147,6 +162,14 @@ def _render_video_result(outputs: dict) -> str:
     lines.append(f"<p>工作目录：<code>{html.escape(outputs.get('work_dir', ''))}</code></p>")
     if outputs.get("title"):
         lines.append(f"<p><strong>{html.escape(outputs['title'])}</strong></p>")
+    if outputs.get("voice"):
+        lines.append(
+            "<p>音色：<code>{voice}</code> 语速：<code>{rate}</code> 音调：<code>{pitch}</code></p>".format(
+                voice=html.escape(outputs.get("voice", "")),
+                rate=html.escape(outputs.get("voice_rate", "")),
+                pitch=html.escape(outputs.get("voice_pitch", "")),
+            )
+        )
     for key, label in [("video_landscape", "B站横屏版"), ("video_portrait", "小红书/视频号竖屏版")]:
         if outputs.get(key):
             lines.append(f"<p>{label}：<code>{html.escape(outputs[key])}</code></p>")
@@ -155,6 +178,7 @@ def _render_video_result(outputs: dict) -> str:
     for key, label in [
         ("script_markdown", "可读脚本"),
         ("image_prompt_sheet", "AI 生图提示词清单"),
+        ("style_guide", "视频视觉风格锁"),
         ("review_checklist", "发布前审核清单"),
         ("next_steps", "下一步操作说明"),
     ]:
@@ -185,6 +209,10 @@ class AgentRequestHandler(BaseHTTPRequestHandler):
                     bgm_path=Path(data["bgm"]) if data.get("bgm") else None,
                     skip_landscape="no_landscape" in data,
                     skip_portrait="no_portrait" in data,
+                    voice=data.get("voice") or None,
+                    voice_preset=data.get("voice_preset") or None,
+                    rate=data.get("rate") or None,
+                    pitch=data.get("pitch") or None,
                 )
                 self._send(_home(_render_video_result(outputs)))
                 return

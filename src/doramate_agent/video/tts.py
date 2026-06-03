@@ -36,6 +36,13 @@ RECOMMENDED_VOICES = {
 }
 
 
+def resolve_voice(name: str | None) -> str:
+    """把预设名或原始 Edge-TTS voice id 解析为可用音色。"""
+    if not name:
+        return RECOMMENDED_VOICES["default"]
+    return RECOMMENDED_VOICES.get(name, name)
+
+
 class EdgeTTS:
     """基于 Edge-TTS 的语音合成器。"""
 

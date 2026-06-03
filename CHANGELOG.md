@@ -9,6 +9,8 @@
 - 新增 `doramate-agent recompose` 命令,支持外部 AI 生图工具替换分镜图片后重新合成横屏/竖屏视频。
 - 新增 `docs/WEB_UI.md`,记录手机访问、Web UI 和 AI 生图替换流程。
 - 视频生成时新增生产包: `video_script.md`、`ai_image_prompts.md`、`review_checklist.md`、`NEXT_STEPS.md`,便于使用外部 AI 生图会员账号完成素材替换和发布审核。
+- 新增 `STYLE_GUIDE.md` 视觉风格锁,让同一条视频所有分镜图片使用统一色彩、构图、材质和禁用项。
+- 新增 TTS 音色选择: `doramate-agent voices`、`video --voice-preset/--voice/--rate/--pitch`,Web UI 同步支持音色预设。
 
 ### Changed
 - 升级 5 个平台 prompt 到 v2.2,强化输出协议,避免"好的/收到/以下是"等 meta 开场白。

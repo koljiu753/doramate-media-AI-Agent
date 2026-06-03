@@ -25,7 +25,7 @@ from typing import Optional
 
 from .base import BaseAgent
 from ..video.script import ScriptGenerator, VideoScript, Scene
-from ..video.tts import EdgeTTS
+from ..video.tts import EdgeTTS, resolve_voice
 from ..video.subtitles import generate_srt
 from ..video.image_gen import PlaceholderImageGenerator, DEFAULT_LANDSCAPE, DEFAULT_PORTRAIT
 from ..video.composer import VideoComposer, check_ffmpeg
@@ -48,6 +48,14 @@ class VideoAgent(BaseAgent):
         tts_rate = self.agent_config.get("video.tts.rate", "+0%")
         tts_pitch = self.agent_config.get("video.tts.pitch", "+0Hz")
         self.tts = EdgeTTS(voice=tts_voice, rate=tts_rate, pitch=tts_pitch)
+        self.visual_style = {
+            "name": self.agent_config.get("video.visual_style.name", "DoraCN clean tech explainer"),
+            "palette": self.agent_config.get("video.visual_style.palette", ""),
+            "composition": self.agent_config.get("video.visual_style.composition", ""),
+            "material": self.agent_config.get("video.visual_style.material", ""),
+            "typography": self.agent_config.get("video.visual_style.typography", ""),
+            "negative_prompt": self.agent_config.get("video.visual_style.negative_prompt", ""),
+        }
         
         self.image_gen = PlaceholderImageGenerator()
 
@@ -60,6 +68,10 @@ class VideoAgent(BaseAgent):
         bgm_path: Optional[Path] = None,
         skip_landscape: bool = False,
         skip_portrait: bool = False,
+        voice: Optional[str] = None,
+        voice_preset: Optional[str] = None,
+        rate: Optional[str] = None,
+        pitch: Optional[str] = None,
     ) -> dict:
         """
         端到端生成视频。
@@ -72,6 +84,10 @@ class VideoAgent(BaseAgent):
             bgm_path: 背景音乐文件路径
             skip_landscape: 跳过 16:9 横屏版（B站）
             skip_portrait: 跳过 9:16 竖屏版（小红书）
+            voice: Edge-TTS 原始音色 ID
+            voice_preset: 音色预设名
+            rate: 语速，如 +8%
+            pitch: 音调，如 +0Hz
         
         Returns:
             dict: 包含所有产物的路径
@@ -111,7 +127,8 @@ class VideoAgent(BaseAgent):
         # === 步骤 2：TTS 生成口播 ===
         logger.info("🎙️  [2/5] 合成口播音频（Edge-TTS，免费）...")
         audio_dir = work_dir / "audio"
-        audio_paths = self.tts.synthesize_scenes(script.scenes, audio_dir)
+        tts = self._make_tts(voice=voice, voice_preset=voice_preset, rate=rate, pitch=pitch)
+        audio_paths = tts.synthesize_scenes(script.scenes, audio_dir)
         logger.info(f"  ✓ 已生成 {len(audio_paths)} 段音频")
 
         # === 步骤 3：生成图片（占位图）===
@@ -129,6 +146,10 @@ class VideoAgent(BaseAgent):
             "image_prompt_sheet": str(production_pack["image_prompt_sheet"]),
             "review_checklist": str(production_pack["review_checklist"]),
             "next_steps": str(production_pack["next_steps"]),
+            "style_guide": str(production_pack["style_guide"]),
+            "voice": tts.voice,
+            "voice_rate": tts.rate,
+            "voice_pitch": tts.pitch,
         }
 
         # === 步骤 4-5：合成横屏版（B站） ===
@@ -197,6 +218,7 @@ class VideoAgent(BaseAgent):
         prompt_sheet = work_dir / "ai_image_prompts.md"
         review_checklist = work_dir / "review_checklist.md"
         next_steps = work_dir / "NEXT_STEPS.md"
+        style_guide = work_dir / "STYLE_GUIDE.md"
 
         script_lines = [
             f"# {script.selected_title}",
@@ -229,6 +251,8 @@ class VideoAgent(BaseAgent):
             "",
             "用途：把每个分镜的提示词复制到即梦、可灵、Midjourney、DALL-E 等工具生成图片。",
             "",
+            "重要：每个分镜都必须复制完整提示词，不要只复制画面描述。完整提示词里已经包含统一风格锁。",
+            "",
             "生成后覆盖对应文件：",
             "- 横屏：`images_landscape/scene_001.png`、`scene_002.png` ...",
             "- 竖屏：`images_portrait/scene_001.png`、`scene_002.png` ...",
@@ -258,8 +282,32 @@ class VideoAgent(BaseAgent):
         if script.thumbnail_prompts:
             prompt_lines.extend(["## 封面提示词", ""])
             for i, prompt in enumerate(script.thumbnail_prompts, 1):
-                prompt_lines.extend([f"### 封面 {i}", prompt, ""])
+                prompt_lines.extend([f"### 封面 {i}", f"{self._style_lock()} COVER CONTENT: {prompt}", ""])
         prompt_sheet.write_text("\n".join(prompt_lines), encoding="utf-8")
+
+        style_lines = [
+            "# 视频视觉风格锁",
+            "",
+            "这份风格锁用于统一整条视频所有 AI 生图。手动用网页版 GPT/即梦/可灵生图时，也要把这里的风格要求复制进每个分镜。",
+            "",
+            f"风格名称：{self.visual_style['name']}",
+            "",
+            "## 固定风格",
+            f"- 色彩：{self.visual_style['palette']}",
+            f"- 构图：{self.visual_style['composition']}",
+            f"- 材质：{self.visual_style['material']}",
+            f"- 字幕/文字区：{self.visual_style['typography']}",
+            "",
+            "## 禁用项",
+            self.visual_style["negative_prompt"],
+            "",
+            "## 使用规则",
+            "- 同一条视频不要混用照片、3D、赛博朋克、手绘、水彩等多种风格。",
+            "- 不要让模型自己设计 DoraMate 真实产品界面，只能生成概念示意图、数据流图、社区学习路线图。",
+            "- 如果某张图风格漂移，把提示词里的 STYLE LOCK / consistent visual system 重复到开头和结尾。",
+            "- 封面可以更强对比，但仍必须沿用同一套色彩和材质。",
+        ]
+        style_guide.write_text("\n".join(style_lines), encoding="utf-8")
 
         checklist_lines = [
             "# 发布前审核清单",
@@ -311,26 +359,56 @@ class VideoAgent(BaseAgent):
             "image_prompt_sheet": prompt_sheet,
             "review_checklist": review_checklist,
             "next_steps": next_steps,
+            "style_guide": style_guide,
         }
 
     @staticmethod
     def _md_cell(text: str) -> str:
         return (text or "").replace("|", "\\|").replace("\n", "<br>")
 
-    @staticmethod
-    def _landscape_prompt(text: str) -> str:
+    def _style_lock(self) -> str:
         return (
-            f"{text}. 16:9 horizontal composition, clean technology explainer style, "
-            "modern Chinese open-source community visual, clear focal subject, no fake product UI, "
-            "no real robot hardware demo, leave safe space for Chinese subtitles at the bottom."
+            f"STYLE LOCK: {self.visual_style['name']}. "
+            f"Palette: {self.visual_style['palette']}. "
+            f"Composition: {self.visual_style['composition']}. "
+            f"Material: {self.visual_style['material']}. "
+            f"Typography/subtitle area: {self.visual_style['typography']}. "
+            "Keep the same art direction, colors, line weight, UI shape language, and lighting across all scenes. "
+            f"Negative prompt: {self.visual_style['negative_prompt']}."
         )
 
-    @staticmethod
-    def _portrait_prompt(text: str) -> str:
+    def _landscape_prompt(self, text: str) -> str:
         return (
-            f"{text}. 9:16 vertical composition for short video, clean technology explainer style, "
-            "large readable central subject, mobile-first layout, no fake product UI, "
-            "no real robot hardware demo, leave safe space for Chinese subtitles at the bottom."
+            f"{self._style_lock()} SCENE CONTENT: {text}. "
+            "Aspect ratio 16:9 horizontal. Clear focal subject, generous whitespace, bottom safe area for Chinese subtitles."
+        )
+
+    def _portrait_prompt(self, text: str) -> str:
+        return (
+            f"{self._style_lock()} SCENE CONTENT: {text}. "
+            "Aspect ratio 9:16 vertical. Mobile-first composition, large central subject, bottom safe area for Chinese subtitles."
+        )
+
+    def _make_tts(
+        self,
+        voice: Optional[str] = None,
+        voice_preset: Optional[str] = None,
+        rate: Optional[str] = None,
+        pitch: Optional[str] = None,
+    ) -> EdgeTTS:
+        cfg_voice = self.agent_config.get("video.tts.voice_zh", "zh-CN-XiaoxiaoNeural")
+        cfg_rate = self.agent_config.get("video.tts.rate", "+0%")
+        cfg_pitch = self.agent_config.get("video.tts.pitch", "+0Hz")
+        if voice:
+            resolved_voice = voice
+        elif voice_preset:
+            resolved_voice = resolve_voice(voice_preset)
+        else:
+            resolved_voice = cfg_voice
+        return EdgeTTS(
+            voice=resolved_voice,
+            rate=rate or cfg_rate,
+            pitch=pitch or cfg_pitch,
         )
 
     def recompose(

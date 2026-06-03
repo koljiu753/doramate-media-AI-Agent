@@ -66,6 +66,10 @@ def cmd_video(args):
         bgm_path=bgm,
         skip_landscape=args.no_landscape,
         skip_portrait=args.no_portrait,
+        voice=args.voice,
+        voice_preset=args.voice_preset,
+        rate=args.rate,
+        pitch=args.pitch,
     )
     
     print("\n" + "=" * 60)
@@ -73,7 +77,12 @@ def cmd_video(args):
     print("=" * 60)
     print(f"📁 工作目录：{outputs['work_dir']}")
     print(f"🎬 标题：{outputs['title']}")
+    print(f"🎙️  音色：{outputs.get('voice', '?')} | rate={outputs.get('voice_rate', '?')} | pitch={outputs.get('voice_pitch', '?')}")
     print(f"📝 简介：\n{outputs['description'][:200]}...")
+    if outputs.get("style_guide"):
+        print(f"🎨 风格锁：{outputs['style_guide']}")
+    if outputs.get("image_prompt_sheet"):
+        print(f"🖼️  生图提示词：{outputs['image_prompt_sheet']}")
     if "video_landscape" in outputs:
         print(f"🎞️  B 站横屏版：{outputs['video_landscape']}")
     if "video_portrait" in outputs:
@@ -85,6 +94,22 @@ def cmd_video(args):
     print(f"  - 封面 prompt（可拿到 Midjourney/DALL-E 生成）：")
     for i, p in enumerate(outputs.get("thumbnail_prompts", []), 1):
         print(f"    [{i}] {p}")
+
+
+def cmd_voices(args):
+    """列出推荐音色，必要时也可以在线查询 Edge-TTS 完整音色。"""
+    from .video.tts import EdgeTTS, RECOMMENDED_VOICES
+    import asyncio
+
+    print("\n推荐音色预设：")
+    for name, voice in RECOMMENDED_VOICES.items():
+        print(f"  {name:12s} {voice}")
+
+    if args.online:
+        print("\nEdge-TTS 在线音色列表：")
+        voices = asyncio.run(EdgeTTS.list_voices(language=args.language))
+        for item in voices:
+            print(f"  {item.get('ShortName')} | {item.get('Gender')} | {item.get('FriendlyName')}")
 
 
 def cmd_recompose(args):
@@ -245,7 +270,17 @@ def main(argv=None):
     p_video.add_argument("--bgm", help="背景音乐文件路径（可选）")
     p_video.add_argument("--no-landscape", action="store_true", help="跳过横屏版（B站）")
     p_video.add_argument("--no-portrait", action="store_true", help="跳过竖屏版（小红书）")
+    p_video.add_argument("--voice-preset", help="音色预设：default/professional/warm/energetic/documentary")
+    p_video.add_argument("--voice", help="Edge-TTS 原始音色 ID，例如 zh-CN-YunxiNeural")
+    p_video.add_argument("--rate", help="语速，例如 +8%% 或 -5%%")
+    p_video.add_argument("--pitch", help="音调，例如 +0Hz")
     p_video.set_defaults(func=cmd_video)
+
+    # voices
+    p_voices = subparsers.add_parser("voices", help="列出可用 TTS 音色")
+    p_voices.add_argument("--online", action="store_true", help="在线查询 Edge-TTS 完整音色列表")
+    p_voices.add_argument("--language", default="zh-CN", help="语言过滤，例如 zh-CN")
+    p_voices.set_defaults(func=cmd_voices)
 
     # recompose
     p_recompose = subparsers.add_parser("recompose", help="替换 AI 图片后重新合成视频")
