@@ -90,6 +90,7 @@ doramate-agent video --topic "dora-rs 新手从哪里开始：中文社区学习
 # - video_script.md          可读分镜脚本
 # - ai_image_prompts.md      横屏/竖屏 AI 生图提示词清单
 # - STYLE_GUIDE.md           统一视觉风格锁
+# - STYLE_REFERENCE.md       先生成风格母版，再用参考图生成分镜
 # - review_checklist.md      发布前审核清单
 # - NEXT_STEPS.md            替换图片与重合成步骤
 

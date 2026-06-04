@@ -32,6 +32,7 @@ http://你的电脑局域网IP:8501
 - 用外部 AI 生图工具替换分镜图片后,一键重新合成视频
 - 每次视频生成都会附带 `video_script.md`、`ai_image_prompts.md`、`review_checklist.md` 和 `NEXT_STEPS.md`
 - 每次视频生成都会附带 `STYLE_GUIDE.md`,用于统一整条视频所有 AI 生图风格
+- 每次视频生成都会附带 `STYLE_REFERENCE.md`,用于先生成风格母版,再用参考图控制正式分镜审美
 - 视频生成页支持选择视觉风格预设、Edge-TTS 音色预设,也可以填写原始音色 ID
 
 ## AI 生图工作流
@@ -41,15 +42,17 @@ http://你的电脑局域网IP:8501
 如果你有即梦、可灵、Midjourney、DALL-E 等账号:
 
 1. 在 Web UI 生成视频初版
-2. 先打开 `STYLE_GUIDE.md`,确认这条视频的统一视觉风格
-3. 打开工作目录里的 `ai_image_prompts.md`
-4. 复制每个 Scene 的完整横屏/竖屏提示词,不要只复制画面描述
-5. 如果某张图风格漂移,把 `STYLE_GUIDE.md` 里的风格锁再贴一次到 prompt 开头
-6. 用 AI 生图工具生成对应图片
-7. 覆盖:
+2. 先打开 `STYLE_REFERENCE.md`,生成 1-2 张风格母版,选中满意的一张
+3. 后续每个 Scene 生图时都上传这张风格母版作为参考图
+4. 再打开 `STYLE_GUIDE.md`,确认这条视频的统一视觉风格
+5. 打开工作目录里的 `ai_image_prompts.md`
+6. 复制每个 Scene 的完整横屏/竖屏提示词,不要只复制画面描述
+7. 如果某张图风格漂移,把 `STYLE_GUIDE.md` 里的风格锁再贴一次到 prompt 开头
+8. 用 AI 生图工具生成对应图片
+9. 覆盖:
    - `images_landscape/scene_001.png`
    - `images_portrait/scene_001.png`
-8. 回到 Web UI 的“替换图片后重合成”页,重新合成成片
+10. 回到 Web UI 的“替换图片后重合成”页,重新合成成片
 
 ## 视觉风格选择
 

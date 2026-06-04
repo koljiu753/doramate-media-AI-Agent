@@ -190,6 +190,7 @@ def _render_video_result(outputs: dict) -> str:
     for key, label in [
         ("script_markdown", "可读脚本"),
         ("image_prompt_sheet", "AI 生图提示词清单"),
+        ("style_reference", "风格母版生成说明"),
         ("style_guide", "视频视觉风格锁"),
         ("review_checklist", "发布前审核清单"),
         ("next_steps", "下一步操作说明"),

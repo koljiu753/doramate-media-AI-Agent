@@ -12,6 +12,7 @@
 - 新增 `STYLE_GUIDE.md` 视觉风格锁,让同一条视频所有分镜图片使用统一色彩、构图、材质和禁用项。
 - 新增 TTS 音色选择: `doramate-agent voices`、`video --voice-preset/--voice/--rate/--pitch`,Web UI 同步支持音色预设。
 - 新增视频生图风格预设: `doramate-agent styles`、`video --style-preset/--style-hint`,改善单张图片提示词的审美质量和可控性。
+- 新增 `STYLE_REFERENCE.md` 风格母版流程,支持先生成满意的参考图,再用参考图约束每个正式分镜。
 
 ### Changed
 - 升级 5 个平台 prompt 到 v2.2,强化输出协议,避免"好的/收到/以下是"等 meta 开场白。

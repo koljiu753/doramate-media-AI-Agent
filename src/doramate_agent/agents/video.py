@@ -147,6 +147,7 @@ class VideoAgent(BaseAgent):
             "thumbnail_prompts": script.thumbnail_prompts,
             "script_markdown": str(production_pack["script_markdown"]),
             "image_prompt_sheet": str(production_pack["image_prompt_sheet"]),
+            "style_reference": str(production_pack["style_reference"]),
             "review_checklist": str(production_pack["review_checklist"]),
             "next_steps": str(production_pack["next_steps"]),
             "style_guide": str(production_pack["style_guide"]),
@@ -220,6 +221,7 @@ class VideoAgent(BaseAgent):
         """写出人工可读的视频生产包。"""
         script_md = work_dir / "video_script.md"
         prompt_sheet = work_dir / "ai_image_prompts.md"
+        style_reference = work_dir / "STYLE_REFERENCE.md"
         review_checklist = work_dir / "review_checklist.md"
         next_steps = work_dir / "NEXT_STEPS.md"
         style_guide = work_dir / "STYLE_GUIDE.md"
@@ -255,7 +257,9 @@ class VideoAgent(BaseAgent):
             "",
             "用途：把每个分镜的提示词复制到即梦、可灵、Midjourney、DALL-E 等工具生成图片。",
             "",
-            "重要：每个分镜都必须复制完整提示词，不要只复制画面描述。完整提示词里已经包含统一风格锁。",
+            "重要：如果单靠文字提示词效果不好，先按 `STYLE_REFERENCE.md` 生成一张满意的风格母版，然后每个分镜都上传这张母版作为参考图。",
+            "",
+            "每个分镜都必须复制完整提示词，不要只复制画面描述。完整提示词里已经包含统一风格锁。",
             "",
             "生成后覆盖对应文件：",
             "- 横屏：`images_landscape/scene_001.png`、`scene_002.png` ...",
@@ -274,10 +278,16 @@ class VideoAgent(BaseAgent):
                     "### 横屏 16:9",
                     self._landscape_prompt(scene.visual_description),
                     "",
+                    "### 横屏 16:9（网页版 GPT / 即梦中文短版）",
+                    self._landscape_prompt_cn(scene.visual_description),
+                    "",
                     f"保存为：`images_landscape/scene_{scene.index:03d}.png`",
                     "",
                     "### 竖屏 9:16",
                     self._portrait_prompt(scene.visual_description),
+                    "",
+                    "### 竖屏 9:16（网页版 GPT / 即梦中文短版）",
+                    self._portrait_prompt_cn(scene.visual_description),
                     "",
                     f"保存为：`images_portrait/scene_{scene.index:03d}.png`",
                     "",
@@ -288,6 +298,36 @@ class VideoAgent(BaseAgent):
             for i, prompt in enumerate(script.thumbnail_prompts, 1):
                 prompt_lines.extend([f"### 封面 {i}", f"{self._style_lock()} COVER CONTENT: {prompt}", ""])
         prompt_sheet.write_text("\n".join(prompt_lines), encoding="utf-8")
+
+        reference_lines = [
+            "# 风格母版生成说明",
+            "",
+            "用途：解决“单张图不好看”的问题。不要一上来就批量生成所有分镜，先生成 1-2 张风格母版，挑满意后再生成正式分镜。",
+            "",
+            "## 推荐流程",
+            "",
+            "1. 复制下面的“风格母版 prompt”去网页版 GPT / 即梦 / 可灵生成一张参考图。",
+            "2. 如果不满意，只改审美描述，不要先动分镜内容。",
+            "3. 选中满意的一张图，后续每个 Scene 生成时都上传这张图，并写：`请严格参考这张图的画风、色彩、线条、构图密度和质感，只替换画面内容。`",
+            "4. 再去 `ai_image_prompts.md` 逐张生成分镜。",
+            "",
+            "## 风格母版 prompt",
+            "",
+            self._style_reference_prompt(),
+            "",
+            "## 分镜生成时的固定开场白",
+            "",
+            "我已上传一张风格参考图。请严格参考它的画风、色彩、线条、构图密度、质感和光影，只替换为下面这个分镜内容。不要改变整体风格，不要生成真实产品截图，不要生成真实机器人 demo。",
+            "",
+            "## 如果还是不好看，优先这样改",
+            "",
+            "- 太像儿童教育图：加 `更克制、更成熟、更像开源社区官网文章头图`",
+            "- 太像廉价 PPT：加 `不要模板感，不要素材库图标堆叠，要像完整编辑插画`",
+            "- 太乱：加 `只保留一个主视觉隐喻，减少装饰元素，画面留白更多`",
+            "- 太假 UI：加 `不要生成可读界面，只用抽象卡片和线条表达信息架构`",
+            "- 太赛博/太暗：加 `白色背景，低饱和，日间光线，不要霓虹，不要暗色科幻`",
+        ]
+        style_reference.write_text("\n".join(reference_lines), encoding="utf-8")
 
         style_lines = [
             "# 视频视觉风格锁",
@@ -363,6 +403,7 @@ class VideoAgent(BaseAgent):
         return {
             "script_markdown": script_md,
             "image_prompt_sheet": prompt_sheet,
+            "style_reference": style_reference,
             "review_checklist": review_checklist,
             "next_steps": next_steps,
             "style_guide": style_guide,
@@ -386,6 +427,19 @@ class VideoAgent(BaseAgent):
             f"Negative prompt: {self.visual_style['negative_prompt']}."
         )
 
+    def _style_lock_cn(self) -> str:
+        return (
+            f"统一风格锁：{self.visual_style['name']}。"
+            f"色彩：{self.visual_style['palette']}。"
+            f"构图：{self.visual_style['composition']}。"
+            f"材质：{self.visual_style['material']}。"
+            f"字幕安全区：{self.visual_style['typography']}。"
+            f"质量标准：{self.visual_style['quality_bar']}。"
+            "画面必须像一张完成度高的开源社区编辑插画，不要像临时概念草图。"
+            "只保留一个清晰主视觉隐喻，层次明确，留白充足，线条和光影统一。"
+            f"禁止：{self.visual_style['negative_prompt']}。"
+        )
+
     def _landscape_prompt(self, text: str) -> str:
         return (
             f"{self._style_lock()} SCENE CONTENT: {text}. "
@@ -393,11 +447,37 @@ class VideoAgent(BaseAgent):
             "No small text, no decorative filler, no random icons."
         )
 
+    def _landscape_prompt_cn(self, text: str) -> str:
+        return (
+            f"{self._style_lock_cn()} "
+            f"分镜内容：{text}。"
+            "横屏 16:9。主体清楚，构图干净，底部留出中文字幕区域。"
+            "不要小字，不要随机图标，不要装饰性填充。"
+        )
+
     def _portrait_prompt(self, text: str) -> str:
         return (
             f"{self._style_lock()} SCENE CONTENT: {text}. "
             "Aspect ratio 9:16 vertical. Mobile-first composition, large central subject, clear top-to-bottom reading order, bottom safe area for Chinese subtitles. "
             "No small text, no decorative filler, no random icons."
+        )
+
+    def _portrait_prompt_cn(self, text: str) -> str:
+        return (
+            f"{self._style_lock_cn()} "
+            f"分镜内容：{text}。"
+            "竖屏 9:16。手机优先构图，主体更大，上下阅读顺序清楚，底部留出中文字幕区域。"
+            "不要小字，不要随机图标，不要装饰性填充。"
+        )
+
+    def _style_reference_prompt(self) -> str:
+        return (
+            f"{self._style_lock_cn()} "
+            "请生成一张“DoraCN / dora-rs 新手学习路线”的风格母版图，不作为最终分镜，只用于确定画风。"
+            "画面内容：白色开源社区学习空间，一条从左到右的学习路线，三个抽象阶段节点：认识 dora-rs、跑通 quick-start、加入中文社区；"
+            "中间有一个简洁的数据流/路线图主视觉，周围只有少量代码卡片、文档卡片和社区标记。"
+            "不要出现真实人物，不要真实机器人，不要可读产品界面，不要生成 DoraMate 已上线 UI。"
+            "整体要成熟、克制、清爽，像正式开源社区官网文章头图。"
         )
 
     def _resolve_visual_style(self, preset: str, style_hint: Optional[str] = None) -> dict[str, str]:

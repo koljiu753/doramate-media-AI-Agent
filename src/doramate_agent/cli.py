@@ -83,6 +83,8 @@ def cmd_video(args):
     print(f"📝 简介：\n{outputs['description'][:200]}...")
     if outputs.get("style_guide"):
         print(f"🎨 风格锁：{outputs['style_guide']}")
+    if outputs.get("style_reference"):
+        print(f"🧪 风格母版：{outputs['style_reference']}")
     if outputs.get("style_preset"):
         print(f"🧭 视觉预设：{outputs['style_preset']}")
     if outputs.get("image_prompt_sheet"):
